@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Employee portal · Office Attendance</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div class="emp-wrap">
+  <div class="topbar">
+    <div class="brand">
+      <span class="brand-mark"><svg viewBox="0 0 32 32" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 17l5.5 5.5L24 11"/></svg></span>
+      Office Attendance
+    </div>
+    <a href="#" id="signOut" style="font-weight:600;text-decoration:none">Sign out</a>
+  </div>
+
+  <h1 id="hello">Hello</h1>
+  <p class="muted" id="todayDate"></p>
+
+  <div class="tabs" role="tablist">
+    <button type="button" class="active" data-tab="att" role="tab">Attendance</button>
+    <button type="button" data-tab="leave" role="tab">Leaves</button>
+  </div>
+
+  <!-- ============ ATTENDANCE TAB ============ -->
+  <section id="tab-att" class="stack">
+    <div class="card">
+      <div class="rowline"><span>Employee ID</span><span id="pEmpId"></span></div>
+      <div class="rowline"><span>Name</span><span id="pName"></span></div>
+      <div class="rowline"><span>Department</span><span id="pDept"></span></div>
+    </div>
+
+    <div class="card">
+      <div class="card-head" style="margin-bottom:8px">
+        <h2>Your location</h2>
+        <span class="pill neutral" id="locPill">Checking…</span>
+      </div>
+      <p id="locText" class="muted">Allow location access when your browser asks.</p>
+      <button type="button" class="btn ghost small" id="btnRecheck" style="margin-top:12px">Check location again</button>
+    </div>
+
+    <div class="btn-pair">
+      <button type="button" class="btn big" id="btnLogin" disabled>Log in</button>
+      <button type="button" class="btn big secondary" id="btnLogout" disabled>Log out</button>
+    </div>
+    <p id="hintText" class="hint" style="text-align:center"></p>
+
+    <div class="card">
+      <div class="rowline"><span>Today's login</span><span id="tLogin">—</span></div>
+      <div class="rowline"><span>Today's logout</span><span id="tLogout">—</span></div>
+    </div>
+
+    <div class="card">
+      <div class="card-head"><h2>Recent attendance</h2></div>
+      <div class="table-wrap">
+        <table style="min-width:0">
+          <thead><tr><th>Date</th><th>Login</th><th>Logout</th></tr></thead>
+          <tbody id="historyBody"><tr><td colspan="3" class="empty">Loading…</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ LEAVES TAB ============ -->
+  <section id="tab-leave" class="stack" hidden>
+    <div class="card">
+      <div class="card-head" style="margin-bottom:10px"><h2>Leave balance (this year)</h2></div>
+      <div class="mini-tiles">
+        <div><b id="bTotal">—</b><span>Total</span></div>
+        <div><b id="bUsed">—</b><span>Used</span></div>
+        <div><b id="bPending">—</b><span>Pending</span></div>
+        <div><b id="bLeft">—</b><span>Left</span></div>
+      </div>
+    </div>
+
+    <form class="card" id="leaveForm">
+      <div class="card-head"><h2>Apply for leave</h2></div>
+      <div class="field">
+        <label for="lType">Leave type</label>
+        <select id="lType">
+          <option>Casual</option>
+          <option>Sick</option>
+          <option>Earned</option>
+          <option>Other</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="lFrom">From</label>
+        <input id="lFrom" type="date" required>
+      </div>
+      <div class="field">
+        <label for="lTo">To</label>
+        <input id="lTo" type="date" required>
+      </div>
+      <div class="field">
+        <label for="lReason">Reason</label>
+        <textarea id="lReason" maxlength="300" placeholder="Short reason for your leave" required></textarea>
+      </div>
+      <button type="submit" class="btn big" id="btnApply">Send request</button>
+    </form>
+
+    <div class="card">
+      <div class="card-head"><h2>My leave requests</h2></div>
+      <div id="leaveList"><p class="empty">Loading…</p></div>
+    </div>
+  </section>
+</div>
+
+<script src="js/config.js"></script>
+<script src="js/common.js"></script>
+<script src="js/employee.js"></script>
+</body>
+</html>

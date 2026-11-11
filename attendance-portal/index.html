@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sign in · Office Attendance</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div class="login-wrap">
+  <div class="login-top">
+    <div class="brand">
+      <span class="brand-mark"><svg viewBox="0 0 32 32" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 17l5.5 5.5L24 11"/></svg></span>
+      Office Attendance
+    </div>
+  </div>
+  <div class="login-body">
+    <form class="login-card" id="loginForm" autocomplete="on">
+      <h1>Sign in</h1>
+      <p class="muted" style="margin-top:6px">Choose your portal to continue.</p>
+
+      <div class="seg" role="group" aria-label="Portal">
+        <button type="button" id="roleEmployee" class="active" aria-pressed="true">Employee</button>
+        <button type="button" id="roleAdmin" aria-pressed="false">Admin</button>
+      </div>
+
+      <div class="field">
+        <label for="uid" id="uidLabel">Employee ID</label>
+        <input id="uid" name="username" type="text" placeholder="e.g. EMP001" autocomplete="username" autocapitalize="characters" required>
+      </div>
+      <div class="field">
+        <label for="pw">Password</label>
+        <input id="pw" name="password" type="password" placeholder="Enter your password" autocomplete="current-password" required>
+      </div>
+
+      <button class="btn big" type="submit" id="submitBtn">Sign in</button>
+
+      <div class="note" id="note">
+        <span id="noteText">Attendance can be marked only from within 300 m of the office.</span>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script src="js/config.js"></script>
+<script src="js/common.js"></script>
+<script src="js/login.js"></script>
+</body>
+</html>
