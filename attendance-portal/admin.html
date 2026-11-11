@@ -1,0 +1,153 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Admin portal · Office Attendance</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div class="shell">
+
+  <aside class="side">
+    <div class="brand">
+      <span class="brand-mark"><svg viewBox="0 0 32 32" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 17l5.5 5.5L24 11"/></svg></span>
+      Office Attendance
+    </div>
+    <nav class="nav" aria-label="Admin">
+      <button type="button" class="active" data-sec="dash">Dashboard</button>
+      <button type="button" data-sec="att">Attendance records</button>
+      <button type="button" data-sec="leave">Leave requests <span class="badge" id="leaveBadge" hidden>0</span></button>
+      <button type="button" data-sec="emp">Employees</button>
+    </nav>
+    <div style="margin-top:auto">
+      <p class="muted" id="adminName" style="font-size:14px;margin-bottom:8px"></p>
+      <a href="#" id="signOut" style="font-weight:600;text-decoration:none">Sign out</a>
+    </div>
+  </aside>
+
+  <main class="main">
+
+    <!-- ============ DASHBOARD ============ -->
+    <section id="sec-dash">
+      <div class="page-head">
+        <div>
+          <h1>Dashboard</h1>
+          <p class="muted" id="dashDate"></p>
+        </div>
+        <button type="button" class="btn ghost small" id="btnRefresh">Refresh</button>
+      </div>
+
+      <div class="tiles">
+        <div class="tile"><div class="k">Total employees</div><div class="v" id="sTotal">—</div><div class="s">Registered</div></div>
+        <div class="tile"><div class="k">Logged in today</div><div class="v" id="sIn" style="color:var(--accent)">—</div><div class="s" id="sInPct">&nbsp;</div></div>
+        <div class="tile"><div class="k">On leave today</div><div class="v" id="sLeave">—</div><div class="s">Approved leave</div></div>
+        <div class="tile"><div class="k">Not logged in yet</div><div class="v" id="sNot" style="color:var(--bad)">—</div><div class="s">Excludes on leave</div></div>
+        <div class="tile"><div class="k">Logged out</div><div class="v" id="sOut">—</div><div class="s">Left the office</div></div>
+        <div class="tile"><div class="k">Pending leave requests</div><div class="v" id="sPending">—</div><div class="s"><a href="#" id="goLeave">Review</a></div></div>
+      </div>
+
+      <div class="row">
+        <div class="card">
+          <div class="card-head"><div><h2>Logins, last 5 working days</h2><p class="muted" style="font-size:13px">Employees who marked login</p></div></div>
+          <div class="chart" id="chart"></div>
+          <div class="chart-labels" id="chartLabels"></div>
+        </div>
+        <div class="card">
+          <div class="card-head"><div><h2>By department today</h2><p class="muted" style="font-size:13px">Logged in / total</p></div></div>
+          <div id="deptList"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ ATTENDANCE ============ -->
+    <section id="sec-att" hidden>
+      <div class="page-head">
+        <h1>Attendance records</h1>
+        <div class="toolbar">
+          <input type="date" id="attDate" aria-label="Date">
+          <button type="button" class="btn ghost small" id="btnCsv">Download CSV</button>
+        </div>
+      </div>
+      <div class="card" style="padding:0">
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Emp ID</th><th>Name</th><th>Department</th><th>Status</th><th>Login</th><th>Logout</th><th>Distance</th></tr></thead>
+            <tbody id="attBody"><tr><td colspan="7" class="empty">Loading…</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ LEAVES ============ -->
+    <section id="sec-leave" hidden>
+      <div class="page-head">
+        <h1>Leave requests</h1>
+        <div class="toolbar">
+          <select id="leaveFilter" aria-label="Filter by status">
+            <option>Pending</option>
+            <option>Approved</option>
+            <option>Rejected</option>
+            <option>Cancelled</option>
+            <option>All</option>
+          </select>
+        </div>
+      </div>
+      <div class="card" style="padding:0">
+        <div class="table-wrap">
+          <table style="min-width:760px">
+            <thead><tr><th>Employee</th><th>Type</th><th>Dates</th><th>Days</th><th>Reason</th><th>Status</th><th>Action</th></tr></thead>
+            <tbody id="leaveBody"><tr><td colspan="7" class="empty">Loading…</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ EMPLOYEES ============ -->
+    <section id="sec-emp" hidden>
+      <div class="page-head"><h1>Employees</h1></div>
+      <div class="row">
+        <form class="card form-card" id="empForm" autocomplete="off">
+          <div class="card-head"><h2>Add employee</h2></div>
+          <div class="field"><label for="eId">Employee ID</label><input id="eId" type="text" placeholder="e.g. EMP049" autocapitalize="characters" required></div>
+          <div class="field"><label for="eName">Full name</label><input id="eName" type="text" placeholder="Full name" required></div>
+          <div class="field">
+            <label for="eDept">Department</label>
+            <select id="eDept">
+              
+              <option>HR</option>
+              <option>Dm</option>
+              <option>Marketing</option>
+              <option>Operations</option>
+              <option>Sales</option>
+              <option>Other</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="ePw">Password</label>
+            <input id="ePw" type="text" placeholder="At least 6 characters" minlength="6" required>
+            <p class="hint">Share this with the employee. It is saved hashed.</p>
+          </div>
+          <button type="submit" class="btn" id="btnAddEmp" style="width:100%">Add employee</button>
+        </form>
+
+        <div class="card" style="padding:0;flex:2 1 460px">
+          <div class="card-head" style="padding:20px 20px 0"><h2 id="empCount">Employees</h2></div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Emp ID</th><th>Name</th><th>Department</th><th>Action</th></tr></thead>
+              <tbody id="empBody"><tr><td colspan="4" class="empty">Loading…</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<script src="js/config.js"></script>
+<script src="js/common.js"></script>
+<script src="js/admin.js"></script>
+</body>
+</html>

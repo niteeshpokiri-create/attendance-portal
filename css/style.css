@@ -1,6 +1,13 @@
+/* ===== CODEVX THEME: change only the 5 colour values below to match the logo =====
+   --accent       main brand colour (buttons, links, active tabs)  [must be dark enough for white text]
+   --accent-d     darker shade of it (button hover, today's bar)
+   --accent-soft  very light tint of it (selected menu, note box)
+   --accent-ink   dark text colour used on the light tint
+   --chart        medium tint of it (dashboard bars)
+   ================================================================================ */
 :root {
   --ink: #14171F; --muted: #5B6472; --line: #E3E6EB; --bg: #F6F7F9; --card: #FFFFFF;
-  --accent: #0F766E; --accent-d: #0B544E; --accent-soft: #E6F4F2; --field: #8A93A2;
+  --accent: #2F3FD9; --accent-d: #1F2BA8; --accent-soft: #ECEEFD; --accent-ink: #121A5C; --chart: #7E8CF0; --field: #8A93A2;
   --ok: #0B5D2A; --ok-bg: #DCF3E4; --bad: #B42318; --bad-bg: #FEE4E2; --warn: #7A4A00; --warn-bg: #FEF0C7;
 }
 * { box-sizing: border-box; }
@@ -17,6 +24,9 @@ a { color: var(--accent); }
 .brand { display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 16px; }
 .brand-mark { width: 30px; height: 30px; border-radius: 8px; background: var(--accent); display: grid; place-items: center; }
 .brand-mark svg { width: 18px; height: 18px; }
+.brand-logo { height: 38px; width: auto; max-width: 150px; object-fit: contain; display: block; }
+.brand-name { font-weight: 700; letter-spacing: .2px; }
+.brand-name span { color: var(--accent); }
 
 /* forms */
 label { display: block; font-size: 14px; font-weight: 600; margin-bottom: 6px; }
@@ -69,7 +79,7 @@ td.nowrap { white-space: nowrap; }
 .row > .card { flex: 1 1 340px; min-width: 0; }
 .chart { display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; height: 200px; border-bottom: 1px solid #C5CAD3; padding: 0 8px; }
 .bar { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; gap: 6px; font-size: 13px; font-weight: 600; }
-.bar i { display: block; width: 100%; max-width: 48px; background: #4F9A92; border-radius: 6px 6px 0 0; min-height: 2px; }
+.bar i { display: block; width: 100%; max-width: 48px; background: var(--chart); border-radius: 6px 6px 0 0; min-height: 2px; }
 .bar.today i { background: var(--accent-d); }
 .chart-labels { display: flex; justify-content: space-between; gap: 12px; padding: 8px 8px 0; font-size: 12px; color: var(--muted); }
 .chart-labels span { flex: 1; text-align: center; }
@@ -84,7 +94,7 @@ td.nowrap { white-space: nowrap; }
 .nav { display: flex; flex-direction: column; gap: 4px; }
 .nav button { display: flex; align-items: center; gap: 12px; height: 44px; padding: 0 12px; border: 0; border-radius: 10px; background: transparent; color: #3B4350; font: inherit; font-weight: 500; text-align: left; cursor: pointer; }
 .nav button:hover { background: var(--bg); }
-.nav button.active { background: var(--accent-soft); color: #0B4F4A; font-weight: 600; }
+.nav button.active { background: var(--accent-soft); color: var(--accent-ink); font-weight: 600; }
 .nav .badge { margin-left: auto; background: var(--bad); color: #fff; font-size: 12px; font-weight: 700; padding: 1px 8px; border-radius: 999px; }
 .main { flex: 999 1 560px; min-width: 0; padding: 32px; }
 .page-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 20px; }
@@ -100,7 +110,7 @@ td.nowrap { white-space: nowrap; }
 .seg { display: flex; gap: 4px; padding: 4px; background: #EEF0F3; border-radius: 12px; margin: 20px 0; }
 .seg button { flex: 1; height: 42px; border: 0; border-radius: 9px; background: transparent; color: var(--muted); font: inherit; font-weight: 600; cursor: pointer; }
 .seg button.active { background: #fff; color: var(--accent); font-weight: 700; }
-.note { display: flex; gap: 10px; padding: 12px 14px; background: var(--accent-soft); color: #0B4F4A; border-radius: 10px; font-size: 14px; margin-top: 18px; }
+.note { display: flex; gap: 10px; padding: 12px 14px; background: var(--accent-soft); color: var(--accent-ink); border-radius: 10px; font-size: 14px; margin-top: 18px; }
 
 /* employee */
 .emp-wrap { max-width: 560px; margin: 0 auto; padding: 20px 18px 40px; }
