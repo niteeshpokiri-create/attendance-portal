@@ -4,6 +4,7 @@
 
   const $ = function (id) { return document.getElementById(id); };
   let attRows = [];
+  let statsDate = '';
 
   $('adminName').textContent = user.name + ' (' + user.id + ')';
   $('signOut').addEventListener('click', function (e) { e.preventDefault(); Auth.logout(); });
@@ -19,17 +20,17 @@
   document.querySelectorAll('.nav button').forEach(function (b) {
     b.addEventListener('click', function () { show(b.dataset.sec); });
   });
-  $('goLeave').addEventListener('click', function (e) { e.preventDefault(); show('leave'); });
   $('btnRefresh').addEventListener('click', loadDashboard);
 
   // ---------- dashboard ----------
   async function loadDashboard() {
     try {
       const s = await api('adminStats');
+      statsDate = s.date;
       $('dashDate').textContent = new Date().toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
       $('sTotal').textContent = s.total;
       $('sIn').textContent = s.loggedIn;
-      $('sInPct').textContent = s.total ? Math.round(s.loggedIn * 100 / s.total) + '% of employees' : ' ';
+      $('sInPct').textContent = s.total ? Math.round(s.loggedIn * 100 / s.total) + '% of employees' : '\u00a0';
       $('sLeave').textContent = s.onLeave;
       $('sNot').textContent = s.notYet;
       $('sOut').textContent = s.loggedOut;
@@ -52,6 +53,9 @@
             return '<div class="meter"><div class="top"><span>' + esc(d.department) + '</span><span class="muted">' + d.present + ' / ' + d.total + '</span></div><div class="track"><div class="fill" style="width:' + pct + '%"></div></div></div>';
           }).join('')
         : '<p class="empty">Add employees to see departments.</p>';
+
+      // keep an opened name list in sync with the refreshed numbers
+      if (detailKey) { const k = detailKey; detailKey = null; openDetail(k); }
     } catch (e) { toast(e.message, 'error'); }
   }
 
@@ -59,6 +63,89 @@
     $('leaveBadge').textContent = n;
     $('leaveBadge').hidden = !n;
   }
+
+  // ---------- dashboard: click a card to see the names ----------
+  const DETAIL_TITLES = { total: 'All employees', in: 'Logged in today', leave: 'On leave today', not: 'Not logged in yet', out: 'Logged out', pending: 'Pending leave requests' };
+  const HEAD_PEOPLE = '<tr><th>Emp ID</th><th>Name</th><th>Department</th><th>Status</th><th>Login</th><th>Logout</th><th>Details</th></tr>';
+  const HEAD_LEAVE = '<tr><th>Emp ID</th><th>Name</th><th>Department</th><th>Type</th><th>Dates</th><th>Days</th><th>Reason</th></tr>';
+  let detailKey = null;
+
+  function markTiles() {
+    document.querySelectorAll('[data-list]').forEach(function (t) {
+      t.classList.toggle('selected', t.dataset.list === detailKey);
+    });
+  }
+
+  function closeDetail() {
+    detailKey = null;
+    $('detailCard').hidden = true;
+    markTiles();
+  }
+
+  async function openDetail(key) {
+    if (detailKey === key) { closeDetail(); return; }
+    detailKey = key;
+    markTiles();
+    $('detailCard').hidden = false;
+    $('detailTitle').textContent = DETAIL_TITLES[key];
+    $('detailHead').innerHTML = key === 'pending' ? HEAD_LEAVE : HEAD_PEOPLE;
+    $('detailGo').hidden = key !== 'pending';
+    $('detailBody').innerHTML = '<tr><td colspan="7" class="empty">Loading…</td></tr>';
+    try {
+      if (key === 'pending') {
+        const pend = await api('listLeaves', { status: 'Pending' });
+        if (detailKey !== key) return;
+        $('detailTitle').textContent = DETAIL_TITLES[key] + ' (' + pend.length + ')';
+        $('detailBody').innerHTML = pend.length
+          ? pend.map(function (l) {
+              const dates = esc(fmtDate(l.from_date)) + (l.to_date !== l.from_date ? ' – ' + esc(fmtDate(l.to_date)) : '');
+              return '<tr><td class="nowrap">' + esc(l.emp_id) + '</td><td><strong>' + esc(l.name) + '</strong></td><td>' + esc(l.department) + '</td><td>' + esc(l.type) + '</td><td class="nowrap">' + dates + '</td><td>' + l.days + '</td><td>' + esc(l.reason) + '</td></tr>';
+            }).join('')
+          : '<tr><td colspan="7" class="empty">No pending leave requests.</td></tr>';
+        return;
+      }
+
+      const date = statsDate || localToday();
+      const res = await Promise.all([
+        api('attendanceByDate', { date: date }),
+        api('listLeaves', { status: 'Approved' })
+      ]);
+      if (detailKey !== key) return;
+
+      const leaveOf = {};
+      res[1].forEach(function (l) {
+        if (l.from_date <= date && date <= l.to_date) leaveOf[l.emp_id] = l;
+      });
+
+      const list = res[0].filter(function (r) {
+        if (key === 'in') return r.status === 'Present';
+        if (key === 'leave') return r.status === 'On leave';
+        if (key === 'not') return r.status === 'Absent';
+        if (key === 'out') return r.status === 'Present' && !!r.logout_time;
+        return true;
+      });
+
+      $('detailTitle').textContent = DETAIL_TITLES[key] + ' (' + list.length + ')';
+      $('detailBody').innerHTML = list.length
+        ? list.map(function (r) {
+            const lv = leaveOf[r.emp_id];
+            const info = lv
+              ? esc(lv.type) + ' leave · ' + esc(fmtDate(lv.from_date)) + (lv.to_date !== lv.from_date ? ' – ' + esc(fmtDate(lv.to_date)) : '')
+              : (r.distance ? esc(r.distance) + ' m from office' : '—');
+            return '<tr><td class="nowrap">' + esc(r.emp_id) + '</td><td><strong>' + esc(r.name) + '</strong></td><td>' + esc(r.department) + '</td><td>' + statusPill(r.status) + '</td><td class="nowrap">' + esc(fmtTime(r.login_time)) + '</td><td class="nowrap">' + esc(fmtTime(r.logout_time)) + '</td><td>' + info + '</td></tr>';
+          }).join('')
+        : '<tr><td colspan="7" class="empty">No employees in this list.</td></tr>';
+    } catch (e) {
+      if (detailKey !== key) return;
+      $('detailBody').innerHTML = '<tr><td colspan="7" class="empty">' + esc(e.message) + '</td></tr>';
+    }
+  }
+
+  document.querySelectorAll('[data-list]').forEach(function (t) {
+    t.addEventListener('click', function () { openDetail(t.dataset.list); });
+  });
+  $('detailClose').addEventListener('click', closeDetail);
+  $('detailGo').addEventListener('click', function () { show('leave'); });
 
   // ---------- attendance ----------
   $('attDate').value = localToday();
@@ -139,20 +226,51 @@
   });
 
   // ---------- employees ----------
+  const DEPT_ORDER = ['Sales', 'HR', 'Marketing', 'Digital Marketing', 'Operation'];
+  let allEmps = [];
+  let deptFilter = 'All';
+
+  function renderEmployees() {
+    // department-wise counts (chips)
+    const counts = {};
+    allEmps.forEach(function (e) {
+      const k = e.department || 'Other';
+      counts[k] = (counts[k] || 0) + 1;
+    });
+    const names = DEPT_ORDER.concat(Object.keys(counts).filter(function (k) { return DEPT_ORDER.indexOf(k) < 0; }));
+    if (deptFilter !== 'All' && names.indexOf(deptFilter) < 0) deptFilter = 'All';
+
+    const chip = function (name, n) {
+      return '<button type="button" class="dept-chip' + (deptFilter === name ? ' active' : '') + '" data-dept="' + esc(name) + '"><b>' + n + '</b><span>' + esc(name) + '</span></button>';
+    };
+    $('deptCounts').innerHTML = chip('All', allEmps.length) + names.map(function (n) { return chip(n, counts[n] || 0); }).join('');
+
+    // employee table (filtered by the selected department)
+    const rows = deptFilter === 'All' ? allEmps : allEmps.filter(function (e) { return (e.department || 'Other') === deptFilter; });
+    $('empCount').textContent = (deptFilter === 'All' ? 'Employees' : deptFilter) + ' (' + rows.length + ')';
+    $('empBody').innerHTML = rows.length
+      ? rows.map(function (e) {
+          return '<tr><td class="nowrap">' + esc(e.emp_id) + '</td><td><strong>' + esc(e.name) + '</strong></td><td>' + esc(e.department) + '</td><td><div class="actions"><button type="button" class="btn ghost small" data-reset="' + esc(e.emp_id) + '">Reset password</button><button type="button" class="btn danger small" data-del="' + esc(e.emp_id) + '">Remove</button></div></td></tr>';
+        }).join('')
+      : '<tr><td colspan="4" class="empty">' + (deptFilter === 'All' ? 'No employees yet. Add the first one.' : 'No employees in ' + esc(deptFilter) + ' yet.') + '</td></tr>';
+  }
+
   async function loadEmployees() {
     $('empBody').innerHTML = '<tr><td colspan="4" class="empty">Loading…</td></tr>';
     try {
-      const rows = await api('listEmployees');
-      $('empCount').textContent = 'Employees (' + rows.length + ')';
-      $('empBody').innerHTML = rows.length
-        ? rows.map(function (e) {
-            return '<tr><td class="nowrap">' + esc(e.emp_id) + '</td><td><strong>' + esc(e.name) + '</strong></td><td>' + esc(e.department) + '</td><td><div class="actions"><button type="button" class="btn ghost small" data-reset="' + esc(e.emp_id) + '">Reset password</button><button type="button" class="btn danger small" data-del="' + esc(e.emp_id) + '">Remove</button></div></td></tr>';
-          }).join('')
-        : '<tr><td colspan="4" class="empty">No employees yet. Add the first one.</td></tr>';
+      allEmps = await api('listEmployees');
+      renderEmployees();
     } catch (e) {
       $('empBody').innerHTML = '<tr><td colspan="4" class="empty">' + esc(e.message) + '</td></tr>';
     }
   }
+
+  $('deptCounts').addEventListener('click', function (ev) {
+    const b = ev.target.closest('[data-dept]');
+    if (!b) return;
+    deptFilter = b.dataset.dept;
+    renderEmployees();
+  });
 
   $('empForm').addEventListener('submit', function (ev) {
     ev.preventDefault();

@@ -3,7 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Admin portal · Office Attendance</title>
+<title>Admin portal · CodeVX Attendance</title>
+<link rel="icon" href="img/logo.png">
 <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
@@ -11,8 +12,8 @@
 
   <aside class="side">
     <div class="brand">
-      <span class="brand-mark"><svg viewBox="0 0 32 32" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 17l5.5 5.5L24 11"/></svg></span>
-      Office Attendance
+      <img class="brand-logo" src="img/logo.png" alt="CodeVX logo" onerror="this.remove()">
+      <span class="brand-name">CodeVX <span>Attendance</span></span>
     </div>
     <nav class="nav" aria-label="Admin">
       <button type="button" class="active" data-sec="dash">Dashboard</button>
@@ -38,13 +39,30 @@
         <button type="button" class="btn ghost small" id="btnRefresh">Refresh</button>
       </div>
 
+      <p class="muted" style="font-size:13px;margin:-6px 0 12px">Click a card to see the employee names.</p>
       <div class="tiles">
-        <div class="tile"><div class="k">Total employees</div><div class="v" id="sTotal">—</div><div class="s">Registered</div></div>
-        <div class="tile"><div class="k">Logged in today</div><div class="v" id="sIn" style="color:var(--accent)">—</div><div class="s" id="sInPct">&nbsp;</div></div>
-        <div class="tile"><div class="k">On leave today</div><div class="v" id="sLeave">—</div><div class="s">Approved leave</div></div>
-        <div class="tile"><div class="k">Not logged in yet</div><div class="v" id="sNot" style="color:var(--bad)">—</div><div class="s">Excludes on leave</div></div>
-        <div class="tile"><div class="k">Logged out</div><div class="v" id="sOut">—</div><div class="s">Left the office</div></div>
-        <div class="tile"><div class="k">Pending leave requests</div><div class="v" id="sPending">—</div><div class="s"><a href="#" id="goLeave">Review</a></div></div>
+        <button type="button" class="tile clickable" data-list="total"><span class="k">Total employees</span><span class="v" id="sTotal">—</span><span class="s">Registered</span></button>
+        <button type="button" class="tile clickable" data-list="in"><span class="k">Logged in today</span><span class="v" id="sIn" style="color:var(--accent)">—</span><span class="s" id="sInPct">&nbsp;</span></button>
+        <button type="button" class="tile clickable" data-list="leave"><span class="k">On leave today</span><span class="v" id="sLeave">—</span><span class="s">Approved leave</span></button>
+        <button type="button" class="tile clickable" data-list="not"><span class="k">Not logged in yet</span><span class="v" id="sNot" style="color:var(--bad)">—</span><span class="s">Excludes on leave</span></button>
+        <button type="button" class="tile clickable" data-list="out"><span class="k">Logged out</span><span class="v" id="sOut">—</span><span class="s">Left the office</span></button>
+        <button type="button" class="tile clickable" data-list="pending"><span class="k">Pending leave requests</span><span class="v" id="sPending">—</span><span class="s">Awaiting approval</span></button>
+      </div>
+
+      <div class="card" id="detailCard" hidden style="padding:0;margin-bottom:18px">
+        <div class="card-head" style="padding:18px 20px 0">
+          <h2 id="detailTitle">Employees</h2>
+          <div class="actions">
+            <button type="button" class="btn small" id="detailGo" hidden>Open leave requests to approve</button>
+            <button type="button" class="btn ghost small" id="detailClose">Close</button>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead id="detailHead"><tr><th>Emp ID</th><th>Name</th><th>Department</th><th>Status</th><th>Login</th><th>Logout</th><th>Details</th></tr></thead>
+            <tbody id="detailBody"></tbody>
+          </table>
+        </div>
       </div>
 
       <div class="row">
@@ -106,6 +124,7 @@
     <!-- ============ EMPLOYEES ============ -->
     <section id="sec-emp" hidden>
       <div class="page-head"><h1>Employees</h1></div>
+      <div class="dept-chips" id="deptCounts" role="group" aria-label="Employees by department"></div>
       <div class="row">
         <form class="card form-card" id="empForm" autocomplete="off">
           <div class="card-head"><h2>Add employee</h2></div>
@@ -114,13 +133,11 @@
           <div class="field">
             <label for="eDept">Department</label>
             <select id="eDept">
-              
-              <option>HR</option>
-              <option>Dm</option>
-              <option>Marketing</option>
-              <option>Operations</option>
               <option>Sales</option>
-              <option>Other</option>
+              <option>HR</option>
+              <option>Marketing</option>
+              <option>Digital Marketing</option>
+              <option>Operation</option>
             </select>
           </div>
           <div class="field">
